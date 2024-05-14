@@ -1,13 +1,8 @@
-# Get the list of installed programs
-$installedPrograms = Get-ItemProperty HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*
+# install stunnel 5.72
+Invoke-Expression ".\stunnel-5.72-win64-installer.exe /AllUsers /S"
 
 # Find the stunnel installation directory
-$stunnelInstallDir = $installedPrograms | Where-Object {$_.DisplayName -like "*stunnel*"} | Select-Object -ExpandProperty DisplayIcon
-$stunnelInstallDir = $stunnelInstallDir -replace '\\bin\\stunnel\.exe$'
-
-# Print the installation directory
-Write-Host "Detected stunnel installation directory: $stunnelInstallDir"
-Write-Host ""
+$stunnelInstallDir = "C:\Program Files (x86)\stunnel"
 
 # Change to the stunnelInstallDir bin directory
 Set-Location $stunnelInstallDir\bin
