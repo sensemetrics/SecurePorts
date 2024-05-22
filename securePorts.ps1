@@ -1,8 +1,19 @@
 # install stunnel 5.72
 Invoke-Expression ".\stunnel-5.72-win64-installer.exe /AllUsers /S"
 
-# Find the stunnel installation directory
+# Use the default stunnel installation directory
 $stunnelInstallDir = "C:\Program Files (x86)\stunnel"
+
+# Wait for install to finish and folder to exist
+$timeout = 20 # wait 20 seconds at most
+$startTime = Get-Date
+while (!(Test-Path -Path $stunnelInstallDir\bin)) {
+    Start-Sleep -Milliseconds 1000
+    if (((Get-Date) - $startTime).TotalSeconds -ge $timeout) {
+        Write-Host "Timeout reached. Unable to install stunnel. Please close this window and try again."
+        Exit
+    }
+}
 
 # Change to the stunnelInstallDir bin directory
 Set-Location $stunnelInstallDir\bin
@@ -37,7 +48,7 @@ Write-Host "You entered the following port numbers: $portNumbers"
 # Run OpenSSL command for each port number
 foreach ($port in $portNumbers) {
   Write-Host "Creating certificate and key for port $port..."
-  Invoke-Expression ".\openssl req -x509 -newkey ed25519 -nodes -keyout ..\config\$port.key -out ..\config\$port.crt -days 18250 -subj '/CN=$port'"
+  Invoke-Expression ".\openssl req -x509 -newkey ed25519 -nodes -keyout ..\config\${port}_private -out ..\config\${port}_public -days 18250 -subj '/CN=$port'"
 }
 
 # Add header lines to ..\config\stunnel.conf
@@ -51,8 +62,8 @@ foreach ($port in $portNumbers) {
   $stanza = "[$port]
 sni = $port
 accept = localhost:$port
-cert = $port.crt
-key = $port.key
+cert = ${port}_public
+key = ${port}_private
 "
   Add-Content -Path ..\config\stunnel.conf -Value $stanza
 }
