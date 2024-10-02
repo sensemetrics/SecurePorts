@@ -58,7 +58,9 @@ connect = deviceproxy-service.iiot-services.bentley.com:443
 Set-Content -Path ..\config\stunnel.conf -Value $header
 
 # Write stanza for each port number to ..\config\stunnel.conf
-foreach ($port in $portNumbers) {
+$allPortNumbers = Get-ChildItem -Path "..\config" -Filter "*_public" | ForEach-Object {$_.Name -replace '_public$'} | Sort-Object
+
+foreach ($port in $allPortNumbers) {
   $stanza = "[$port]
 sni = $port
 accept = localhost:$port
